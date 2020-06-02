@@ -9,6 +9,7 @@
 #
 # Requirements: sh, awk, sed, openssl, date, mktemp, ls, 
 #               mkdir, rmdir, mv, basename, grep, chmod
+# in addition requires curl if you use URLs for the PKCS#7 input
 #
 #
 destdir=.
@@ -36,6 +37,9 @@ Usage: tcsg4-install-servercert.sh [-d destdir] [-r|-R] [-f]
    -b bckprefix  prefix of the filename to use when making backups
 
    <PKCS7.p7b>   filename of the blob produced by Sectigo
+                 or URL to the PKCS#7 blob from the success email
+                 (https://cer.../ssl?action=download&sslId=1234567&format=bin)
+                 remember to "quote" the URL to preserve the ampersands
 
 EOF
    return;
@@ -62,6 +66,40 @@ case $# in
 1 ) pkfile="$1"; break ;;
 * ) echo "Too many arguments." >&2 ; exit 1 ;;
 esac
+
+# ############################################################################
+# retrieve PKCS#7 from URL, if URL given (beware of quoting the ampersand)
+#
+case "$pkfile" in
+https://*format=bin | https://*format=base64 )
+    sslid=`echo "$pkfile"|sed -e's/.*sslId=\([0-9]*\).*/\1/'`
+    [ "$sslid" -gt 0 ] >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "URL provided is not a Sectigo SSL PKCS#7 enrollment result" >&2
+        exit 1
+    fi
+    curl -s -o "sectigo-order-$sslid.p7b" "$pkfile"
+    if [ $? -ne 0 ]; then
+        echo "URL cannot be downloaded ($pkfile)" >&2
+        exit 1
+    fi
+    case "$pkfile" in
+        *format=base64 )
+            mv "sectigo-order-$sslid.p7b" "sectigo-order-$sslid.p7b.pem"
+            openssl pkcs7 \
+                -inform pem  -in  "sectigo-order-$sslid.p7b.pem" \
+                -outform der -out "sectigo-order-$sslid.p7b"
+        ;;
+    esac
+    if [ ! -s "sectigo-order-$sslid.p7b" ]; then
+        echo "URL download result empty in sectigo-order-$sslid.p7b " >&2
+        echo "  (source $pkfile)" >&2
+        exit 1
+    fi
+    pkfile="sectigo-order-$sslid.p7b"
+    ;;
+esac
+
 
 # ############################################################################
 # input validation
