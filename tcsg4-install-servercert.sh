@@ -28,8 +28,6 @@ Usage: tcsg4-install-servercert.sh [-d destdir] [-r|-R] [-f]
        [-b backupprefix] <PKCS7.p7b>
 
    -d destdir    write result files to <destdir>
-                 if <destdir> contains "globus", also make the
-                 symlinks userkey.pem and usercert.pem for GCT tools
    -r            use EEC commonName as basis for new filenames
    --no-rename   use the base filename of the P7B file for new filenames
    -R            use EEC commonName and date as basis for filenames
