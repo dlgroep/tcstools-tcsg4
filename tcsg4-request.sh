@@ -44,7 +44,7 @@ case "$1" in
 esac
 done
 
-case "$@" in
+case "$#" in
 0 ) help
     exit 1 
     ;;
