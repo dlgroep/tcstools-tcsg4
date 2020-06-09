@@ -51,7 +51,7 @@ case "$#" in
 * ) break ;;
 esac
 
-hn=`echo $1 | sed -e 's/[,\ ]//g'`
+hn=`echo $1 | sed -e 's/[,\ ]//g;s/DNS://;'`
 domain=$hn
 
 case "$domain" in
@@ -74,7 +74,7 @@ while [ x"$1" != x"" ] ; do
   if [ x"$alt" != x"" ]; then
     alt="$alt,"
   fi
-  hn=`echo $1 | sed -e 's/[,\ ]//g'`
+  hn=`echo $1 | sed -e 's/[,\ ]//g;s/DNS://;'`
   alt="${alt}DNS:$hn"
   shift
 done
@@ -87,7 +87,7 @@ alt=`echo $alt | sed -e 's/WILDCARD/\*/g'`
 echo "----------------------------------------------------------------------"
 echo "Requesting certificate for $domain in $destdir"
 echo " SAN dNSNames: $alt"
-
+exit 0
 fn=`mktemp /tmp/request.cnf.XXXXXX`
 
 cat <<EOF > $fn
