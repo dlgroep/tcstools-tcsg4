@@ -87,7 +87,7 @@ alt=`echo $alt | sed -e 's/WILDCARD/\*/g'`
 echo "----------------------------------------------------------------------"
 echo "Requesting certificate for $domain in $destdir"
 echo " SAN dNSNames: $alt"
-exit 0
+
 fn=`mktemp /tmp/request.cnf.XXXXXX`
 
 cat <<EOF > $fn
