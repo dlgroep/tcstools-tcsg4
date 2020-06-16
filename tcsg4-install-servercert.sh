@@ -38,6 +38,7 @@ Usage: tcsg4-install-servercert.sh [-d destdir] [-r|-R] [-f]
                  or URL to the PKCS#7 blob from the success email
                  (https://cer.../ssl?action=download&sslId=1234567&format=bin)
                  remember to "quote" the URL to preserve the ampersands
+                 or Self-Enrollment ID number (numeric)
 
 EOF
    return;
@@ -67,7 +68,15 @@ esac
 
 # ############################################################################
 # retrieve PKCS#7 from URL, if URL given (beware of quoting the ampersand)
+# or from order number
 #
+[ "$pkfile" -gt 0 ] > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  # this was a pure number, so an order ID
+  echo "Recognised order ID $pkfile, downloading"
+  pkfile="https://cert-manager.com/customer/surfnet/ssl?action=download&sslId=${pkfile}&format=bin"
+fi
+
 case "$pkfile" in
 https://*format=bin | https://*format=base64 )
     sslid=`echo "$pkfile"|sed -e's/.*sslId=\([0-9]*\).*/\1/'`
