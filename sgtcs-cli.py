@@ -21,6 +21,8 @@ Options:
 
 # @(#)$Id$
 # written by Dennis van Dok, Nikhef
+#
+# Prerequisites: python3, and "pip3 install cryptography"
 
 import os
 from requests import Request, Session
