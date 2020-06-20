@@ -27,7 +27,7 @@ server certificates. Required for web servers to fix ordering and get
 appropriate chain files for Apache, IIS, and NGinx
 
   Usage: tcsg4-install-servercert.sh [-d destdir] [-r|-R] [-f]
-       [-b backupprefix] <PKCS7.p7b>
+       [-b backupprefix] <PKCS7.p7b> | EnrollmentID | p7b-URL
 
    -d destdir    write result files to <destdir>
    -r            use EEC commonName as basis for new filenames
