@@ -33,6 +33,7 @@ bckprefix=backup
 makecsr=0
 nameformat=friendly
 certfn=
+profile=""
 
 # ############################################################################
 # usage help and instructions
@@ -237,6 +238,13 @@ do
       mv "$destdir/cert-$credbase.pem" "$destdir/$bckprefix.$DATE.cert-$credbase.pem"
     fi
     cat $i > "$destdir/cert-$credbase.pem"
+
+    case "$issuercn" in 
+    GEANT\ OV\ *) profile="ov" ;;
+    GEANT\ EV\ *) profile="ev" ;;
+    GEANT\ eScience\ *) profile="igtfov" ;;
+    * ) profile="" ;;
+    esac
   fi
 
 done
@@ -273,6 +281,15 @@ fi
 #
 cat "$destdir/cert-$certfn.pem" "$destdir/chain-$certfn.pem" \
     > "$destdir/nginx-$certfn.pem"
+
+# ############################################################################
+# make per-profile copies in case of key re-use for same host new profile
+#
+if [ "$profile" != "" ]; then
+  [ -f "$destdir/cert-$certfn.pem" ] && cp -p "$destdir/cert-$certfn.pem" "$destdir/$profile-cert-$certfn.pem"
+  [ -f "$destdir/chain-$certfn.pem" ] && cp -p "$destdir/chain-$certfn.pem" "$destdir/$profile-chain-$certfn.pem"
+  [ -f "$destdir/nginx-$certfn.pem" ] && cp -p "$destdir/nginx-$certfn.pem" "$destdir/$profile-nginx-$certfn.pem"
+fi
 
 # ############################################################################
 # inform user of result and of globus compatibility
