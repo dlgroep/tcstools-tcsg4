@@ -71,6 +71,7 @@ case "$1" in
 -f | --force )             bckprefix=""; shift 1 ;;
 -h | --help )              help ; exit 0 ;;
 -b | --backupprefix )      bckprefix="$2"; shift 2 ;;
+-C | --customer )          customer="$2"; shift 2 ;;
 -d | --destination )       destdir="$2"; shift 2 ;;
 -* )                       echo "Unknown option $1, exiting" >&2 ; exit 1 ;;
 *  )                       break ;;
