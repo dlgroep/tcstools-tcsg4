@@ -34,6 +34,7 @@ makecsr=0
 nameformat=friendly
 certfn=
 profile=""
+customer=surfnet
 
 # ############################################################################
 # usage help and instructions
@@ -48,6 +49,7 @@ Usage: tcsg4-install-servercert.sh [-d destdir] [-r|-R] [-f]
    -R            use EEC commonName and date as basis for filenames
    -f            do not make backups of existing files
    -b bckprefix  prefix of the filename to use when making backups
+   -C customer   name of the Sectigo customer (default: surfnet)
 
    <PKCS7.p7b>   filename of the blob produced by Sectigo
                  or URL to the PKCS#7 blob from the success email
@@ -89,7 +91,7 @@ esac
 if [ $? -eq 0 ]; then
   # this was a pure number, so an order ID
   echo "Recognised order ID $pkfile, downloading"
-  pkfile="https://cert-manager.com/customer/surfnet/ssl?action=download&sslId=${pkfile}&format=bin"
+  pkfile="https://cert-manager.com/customer/${customer}/ssl?action=download&sslId=${pkfile}&format=bin"
 fi
 
 case "$pkfile" in
