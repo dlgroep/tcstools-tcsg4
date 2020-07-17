@@ -30,6 +30,7 @@ DATE=`date +%Y%m%d-%H%M%S`
 progname=`basename "$0"`
 bckprefix=backup
 makecsr=0
+newpass=0
 nameformat=
 certfn=
 
@@ -77,6 +78,7 @@ case "$1" in
 -n | --name )              friendlyname="$2"; shift 2 ;;
 -d | --destination )       destdir="$2"; shift 2 ;;
 -p | --passfile )          passfile="$2" ; shift 2 ;;
+--newpass )                newpass=1 ; shift ;;
 -* )                       echo "Unknown option $1, exiting" >&2 ; exit 1 ;;
 *  )                       break ;;
 esac
@@ -115,7 +117,18 @@ else
   done
 fi
 if [ -z "$PW" ]; then echo "Empty password is not allowed" >&2; exit 2; fi
-export PW
+
+if [ $newpass -ne 0 ]; then
+  while [ x"$NPW" = x"" ]; do
+    echo -ne "NEW Passphrase for your secret key and PKCS#12 package: "
+    stty -echo ; read NPW ; stty echo
+    echo ""
+  done
+else
+  NPW="$PW"
+fi
+
+export PW NPW
 
 # ############################################################################
 # extraction of Sectigo blob of crap
@@ -128,7 +141,7 @@ if [ ! -d "$tempdir" ]; then
 fi
 
 openssl pkcs12 -nomacver -password env:PW -in "$pkfile" \
-    -passout env:PW -out "$tempdir/crap-$credbase.pem"
+    -passout env:NPW -out "$tempdir/crap-$credbase.pem"
 
 if [ $? -ne 0 ]; then
   echo "Error: cannot extract data from PKCS12 file $pkfile" >&2
@@ -265,10 +278,10 @@ if [ -f "$destdir/package-$credbase.p12" -a -n "$bckprefix" ]; then
      "$destdir/$bckprefix.$DATE.package-$credbase.p12"
 fi
 openssl pkcs12 -export \
-    -passin env:PW -inkey "$tempdir/key-$credbase.pem" \
+    -passin env:NPW -inkey "$tempdir/key-$credbase.pem" \
     -certfile "$destdir/chain-$credbase.pem" \
     -name "$friendlyname" -in "$pkcs12eec" \
-    -passout env:PW -out "$destdir/package-$credbase.p12"
+    -passout env:NPW -out "$destdir/package-$credbase.p12"
 
 if [ $? -ne 0 ]; then
   echo "Error: something went wrong creating the normalised package" >&2
@@ -329,7 +342,7 @@ if [ "$makecsr" -ne 0 ]; then
   echo "  subject: $certsubject"
 
   openssl req -new \
-    -key "$destdir/key-$certfn.pem" -passin env:PW \
+    -key "$destdir/key-$certfn.pem" -passin env:NPW \
     -subj "$certsubject" \
     -out "$destdir/request-$certfn.pem"
 fi
