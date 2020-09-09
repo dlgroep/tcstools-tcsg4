@@ -209,7 +209,7 @@ do
          /CA:FALSE/ { ca=0; } /CA:TRUE/ { ca=1; } 
          END {print ca;}'`
 
-  if [ "$certcn" = "$issuercn" -o "$issuercn" = "AddTrust External CA Root" ] 
+  if [ "$certcn" = "$issuercn" -o "$issuercn" = "AddTrust External CA Root" -o "$issuercn" = "AAA Certificate Services" ] 
   then
     continue
   fi
