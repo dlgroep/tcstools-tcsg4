@@ -112,7 +112,7 @@ if [ -n "$passfile" ]; then
   PW=`head -1 "$passfile"`
 else
   while [ x"$PW" = x"" ]; do
-    echo -ne "Passphrase (existing) for your secret key: "
+    echo -n "Passphrase (existing) for your secret key: "
     stty -echo ; read PW ; stty echo
     echo ""
   done
@@ -121,7 +121,7 @@ if [ -z "$PW" ]; then echo "Empty password is not allowed" >&2; exit 2; fi
 
 if [ $newpass -ne 0 ]; then
   while [ x"$NPW" = x"" ]; do
-    echo -ne "NEW Passphrase for your secret key and PKCS#12 package: "
+    echo -n "NEW Passphrase for your secret key and PKCS#12 package: "
     stty -echo ; read NPW ; stty echo
     echo ""
   done
@@ -180,10 +180,11 @@ $AWK '
   }
   /^-----BEGIN CERTIFICATE-----$/ {
     icert++;
-    print $0 > "'$tempdir/cert-'"icert"'-$credbase.pem'";
+    cfname = "'$tempdir/cert-'" icert "'-$credbase.pem'";
+    print $0 > cfname;
     do {
       getline ln;
-      print ln > "'$tempdir/cert-'"icert"'-$credbase.pem'";
+      print ln > cfname;
     } while ( ln != "-----END CERTIFICATE-----" );
   }
 ' "$tempdir/crap-$credbase.pem" 
@@ -352,12 +353,12 @@ fi
 # inform user of result and of globus compatibility
 #
 echo "The following files have been created for you:"
-echo -ne "  " ; ls -l1a "$destdir/cert-$certfn.pem"
-echo -ne "  " ; ls -l1a "$destdir/chain-$certfn.pem"
+echo -n "  " ; ls -l1a "$destdir/cert-$certfn.pem"
+echo -n "  " ; ls -l1a "$destdir/chain-$certfn.pem"
 [ -f "$destdir/request-$certfn.pem" ] && \
-  ( echo -ne "  " ; ls -l1a "$destdir/request-$certfn.pem" )
-echo -ne "  " ; ls -l1a "$destdir/key-$certfn.pem"
-echo -ne "  " ; ls -l1a "$destdir/package-$certfn.p12"
+  ( echo -n "  " ; ls -l1a "$destdir/request-$certfn.pem" )
+echo -n "  " ; ls -l1a "$destdir/key-$certfn.pem"
+echo -n "  " ; ls -l1a "$destdir/package-$certfn.p12"
 
 # globus-ify pertinent dest directories
 case "$destdir" in
@@ -368,13 +369,13 @@ case "$destdir" in
 	mv "$destdir/userkey.pem" "$destdir/$bckprefix.$DATE.userkey.pem"
     fi
     echo "  userkey.pem"
-    ln -sfnT "key-$certfn.pem" "$destdir/userkey.pem"
+    ln -sfn "key-$certfn.pem" "$destdir/userkey.pem"
     if [ -f "$destdir/usercert.pem" -a -n "$bckprefix" ]; then
         echo "  backing up usercert.pem to $bckprefix.$DATE.usercert.pem"
 	mv "$destdir/usercert.pem" "$destdir/$bckprefix.$DATE.usercert.pem"
     fi
     echo "  usercert.pem"
-    ln -sfnT "cert-$certfn.pem" "$destdir/usercert.pem"
+    ln -sfn "cert-$certfn.pem" "$destdir/usercert.pem"
     ;;
 esac
 
