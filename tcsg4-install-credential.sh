@@ -33,6 +33,7 @@ makecsr=0
 newpass=0
 nameformat=
 certfn=
+AWK=${AWK:-awk}
 
 # ############################################################################
 # usage help and instructions
@@ -168,7 +169,7 @@ if [ `grep -c CERTIFICATE "$tempdir/crap-$credbase.pem"` -eq 0 ]; then
 fi
 
 # extract 
-awk '
+$AWK '
   BEGIN { icert = 0; }
   /^-----BEGIN ENCRYPTED PRIVATE KEY-----$/ {
     print $0 > "'$tempdir/key-$credbase.pem'";
@@ -203,9 +204,9 @@ do
     sed -e 's/.*CN = \([a-zA-Z0-9\._][- a-zA-Z0-9:\._@]*\).*/\1/'`
 
   certdate=`openssl x509 -noout -text -in "$i" | \
-    awk '/    Not Before:/ { print $4,$3,$6; }'`
+    $AWK '/    Not Before:/ { print $4,$3,$6; }'`
   certisca=`openssl x509 -noout -text -in "$i" | \
-    awk 'BEGIN { ca=0; } 
+    $AWK 'BEGIN { ca=0; } 
          /CA:FALSE/ { ca=0; } /CA:TRUE/ { ca=1; } 
          END {print ca;}'`
 
