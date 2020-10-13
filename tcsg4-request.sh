@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-bits=2048
+bits=4096
 key=rsa
 force=0
 
@@ -30,7 +30,7 @@ Usage: tcsg4-request.sh [-d destdir] hostname [hostname ...]
 
    -d destdir   write result files to <destdir>
                 (default: ./tcs-<hostname>/)
-   -b bits      use <bits> for RSA key length (default: 2048) or curve for 
+   -b bits      use <bits> for RSA key length (default: 4096) or curve for 
                 ECC (e.g. "prime256v1", set explicitly)
    -f | --force overwrite existing files
    -E | --ecc   generate ECC cert (remember to set -b to the curve!)
