@@ -88,7 +88,7 @@ while [ x"$1" != x"" ] ; do
   if [ x"$alt" != x"" ]; then
     alt="$alt,"
   fi
-  hn=`echo $1 | sed -e 's/[,\ ]//g;s/DNS://;'`
+  hn=`echo $1 | sed -e 's/[,\ ]//g;s/DNS://;s/;//g'`
   alt="${alt}DNS:$hn"
   shift
 done
@@ -171,3 +171,4 @@ cat "$destdir/request-$filebase.pem"
 
 echo "----------------------------------------------------------------------"
 echo "left request in $destdir/request-$filebase.pem"
+echo "go there by     cd $destdir"

@@ -190,7 +190,7 @@ for i in "$tempdir"/cert-*-"$credbase".pem
 do
   certcn=`openssl x509 -noout -subject -nameopt oneline,sep_comma_plus \
     -in "$i" | \
-    sed -e 's/.*CN = \([a-zA-Z0-9\._][- a-zA-Z0-9:\._@]*\).*/\1/'`
+    sed -e 's/.*CN = \([a-zA-Z0-9\._\*][- a-zA-Z0-9:\*\._@]*\).*/\1/'`
   issuercn=`openssl x509 -noout -issuer -nameopt oneline,sep_comma_plus \
     -in "$i" | \
     sed -e 's/.*CN = \([a-zA-Z0-9\._][- a-zA-Z0-9:\._@]*\).*/\1/'`
@@ -215,7 +215,7 @@ do
   esac
 
   if [ $certisca -eq 0 ]; then
-    certfn=`echo "$certcn" | sed -e 's/[^-a-zA-Z0-9_\.]/_/g'`
+    certfn=`echo "$certcn" | sed -e 's/\*/WILDCARD/g;s/[^-a-zA-Z0-9_\.]/_/g'`
     certfndated=`echo "$certcn issued $certdate" | \
                  sed -e 's/[^-a-zA-Z0-9_]/_/g'`
     echo "Processing EEC certificate: $certcn"
@@ -284,6 +284,17 @@ fi
 #
 cat "$destdir/cert-$certfn.pem" "$destdir/chain-$certfn.pem" \
     > "$destdir/nginx-$certfn.pem"
+
+# ############################################################################
+# create a PKCS#12 (p12/pfx) bundle for ISS/MS and appliances
+#
+openssl pkcs12 -export -nodes \
+    -inkey key-$certfn.pem -in cert-$certfn.pem \
+    -name "SSL $profile certificate $certfn" \
+    -certfile chain-$certfn.pem \
+    -passout pass: \
+    -out bundle-$certfn.p12
+chmod 0600 bundle-$certfn.p12
 
 # ############################################################################
 # make per-profile copies in case of key re-use for same host new profile
