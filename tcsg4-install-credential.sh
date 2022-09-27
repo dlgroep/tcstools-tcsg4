@@ -10,7 +10,10 @@
 # Requirements: sh, awk, sed, openssl, date, mktemp, ls, 
 #               mkdir, rmdir, mv, basename, grep, chmod
 #
-# Copyright 2020 David Groep, Nikhef, Amsterdam
+# Copyright 2020-2022 David Groep, Nikhef, Amsterdam
+#
+# With contributions by: 
+#   Francesco Giacomini <francesco.giacomini@cnaf.infn.it> - OpenSSL3 support
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,7 +43,7 @@ AWK=${AWK:-awk}
 #
 help() { cat <<EOF
 Usage: tcsg4-install-credential.sh [-d destdir] [-p passfile] [-r|-R] [-f]
-       [-n name] [-b backupprefix] <PKCS12.p12>
+       [-n name] [-b backupprefix] [--csr] [--newpass] <PKCS12.p12>
 
    -d destdir    write result files to <destdir>
                  if <destdir> contains "globus", also make the
@@ -55,6 +58,7 @@ Usage: tcsg4-install-credential.sh [-d destdir] [-p passfile] [-r|-R] [-f]
                  from the commonName of the EEC and issuance date
    -b bckprefix  prefix of the filename to use when making backups
    --csr         generate a CSR request file for future use in destdir
+   --newpass     ask for a new password for resulting credential secrets
 
    <PKCS12.p12>  filename of the blob produced by Sectigo
 
@@ -113,7 +117,7 @@ if [ -n "$passfile" ]; then
 else
   while [ x"$PW" = x"" ]; do
     echo -n "Passphrase (existing) for your secret key: "
-    stty -echo ; read PW ; stty echo
+    stty -echo ; IFS= read -r PW ; stty echo
     echo ""
   done
 fi
@@ -122,7 +126,7 @@ if [ -z "$PW" ]; then echo "Empty password is not allowed" >&2; exit 2; fi
 if [ $newpass -ne 0 ]; then
   while [ x"$NPW" = x"" ]; do
     echo -n "NEW Passphrase for your secret key and PKCS#12 package: "
-    stty -echo ; read NPW ; stty echo
+    stty -echo ; IFS= read -r NPW ; stty echo
     echo ""
   done
 else
@@ -141,7 +145,14 @@ if [ ! -d "$tempdir" ]; then
   exit 1
 fi
 
-openssl pkcs12 -nomacver -password env:PW -in "$pkfile" \
+# add -legacy to OpenSSL (3+) pkcs12, if supported, to allow DES/RC2 CBC mode
+if [ `openssl pkcs12 -help 2>&1|grep -c legacy` -ne 0 ]; then
+  OSSL3_LEGACY=" -legacy"
+else
+  OSSL3_LEGACY=""
+fi
+
+openssl pkcs12 -nomacver -password env:PW -in "$pkfile" $OSSL3_LEGACY \
     -passout env:NPW -out "$tempdir/crap-$credbase.pem"
 
 if [ $? -ne 0 ]; then

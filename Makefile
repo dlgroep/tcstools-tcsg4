@@ -1,7 +1,7 @@
 #
 # @(#)$Id$
 # 
-# insatll the scripts
+# install the scripts
 #
 all: install
 

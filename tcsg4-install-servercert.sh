@@ -152,6 +152,7 @@ openssl pkcs7 -inform der -in "$pkfile" -print_certs \
 if [ $? -ne 0 ]; then
   echo "Error: cannot extract data from PKCS7 file $pkfile" >&2
   echo "       PASSPHRASE INCORRECT?" >&2
+  rmdir "$tempdir" > /dev/null 2>&1
   exit 3
 fi
 

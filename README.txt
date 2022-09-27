@@ -83,7 +83,7 @@ See the step-by-step guide at
 and the documentation pages from https://ca.dutchgrid.nl/tcs/
 
   Usage: tcsg4-install-credential.sh [-d destdir] [-p passfile] [-r|-R] [-f]
-       [-n name] [-b backupprefix] <PKCS12.p12>
+       [-n name] [-b backupprefix] [--csr] [--newpass] <PKCS12.p12>
 
    -d destdir    write result files to <destdir>
                  if <destdir> contains "globus", also make the
@@ -98,6 +98,7 @@ and the documentation pages from https://ca.dutchgrid.nl/tcs/
                  from the commonName of the EEC and issuance date
    -b bckprefix  prefix of the filename to use when making backups
    --csr         generate a CSR request file for future use in destdir
+   --newpass     ask for a new password for resulting credential secrets
 
    <PKCS12.p12>  filename of the blob produced by Sectigo
 
@@ -105,8 +106,10 @@ and the documentation pages from https://ca.dutchgrid.nl/tcs/
   anything, since it will corrupt your key chain. Always use
   the "package-<name>.p12" file created by this script
 
+
 -----------------------------------------------------------------------------
 @(#)$Id$
 Shell scripts by David Groep, Nikhef.
+With contributions by Francesco Giacomini and Mischa Salle.
 API tool sgcli.py by Dennis van Dok, Nikhef.
 Apache 2.0 License - https://www.apache.org/licenses/LICENSE-2.0
