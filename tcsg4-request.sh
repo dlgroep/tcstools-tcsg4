@@ -171,4 +171,6 @@ cat "$destdir/request-$filebase.pem"
 
 echo "----------------------------------------------------------------------"
 echo "left request in $destdir/request-$filebase.pem"
-echo "go there by     cd $destdir"
+echo "go there by:"
+echo "     cd $destdir"
+echo ""

@@ -93,9 +93,9 @@ fi
 if [ $CPUSER = root ]; then
   echo "Installing rsync using $pkgmngr ..."
   if [ $pkgmngr = yum ]; then
-    ssh $CPUSER@"$fn" "yum -y install rsync > /dev/null 2>&1"
+    ssh $CPUSER@"$fn" "rsync --help > /dev/null 2>&1 || yum -y install rsync > /dev/null 2>&1"
   elif [ $pkgmngr = apt ]; then
-    ssh $CPUSER@"$fn" "( apt-get update && apt-get install rsync ) > /dev/null 2>&1"
+    ssh $CPUSER@"$fn" "rsync --help > /dev/null 2>&1 || ( apt-get update && apt-get install rsync ) > /dev/null 2>&1"
   else
     echo "Don't know package management system $pkgmngr" >&2 
     exit 2
