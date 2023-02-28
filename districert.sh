@@ -29,6 +29,7 @@ destpath=/root
 srcdir=.
 destdir=tcsg4
 pkgmngr="yum"
+keyperms=0600
 
 usage() {
 cat <<EOF
@@ -43,6 +44,8 @@ Usage: $0 [-R] [-d destdir (tcsg4)] [-p destpath (/root)] [-U user]
           otherwise. -R will overrule this setting
   -R      copy files to the EL-destigated place (/etc/pki/tls/tcsg4)
   -U user use <user> as the userid on the target system (default: $CPUSER)
+  -O ownr use <ownr> as the file owner on target system (default: $CPUSER)
+  -K keyp set key permissions to <keyp> (default: 0600)
   -A      use apt-get, not yum, to ensure remote rsync is present
   -H      run "systemctl restart httpd" on the target afterwards
   -S srv  run "systemctl restart <srv>" on the target afterwards
@@ -52,10 +55,12 @@ EOF
 }
 
 
-while getopts "s:d:p:RhAHS:U:" o
+while getopts "s:d:p:RhAHS:U:O:K:" o
 do
   case "${o}" in
     U ) CPUSER="${OPTARG}" ;;
+    O ) OWNER="${OPTARG}" ;;
+    K ) keyperms="${OPTARG}" ;;
     H ) httpdrestart="httpd" ;;
     S ) httpdrestart="${OPTARG}" ;;
     p ) destpath=${OPTARG} ;;
@@ -107,8 +112,10 @@ fi
 echo "rsync ${srcdir}/ to ${CPUSER}@"$fn":$CPPATH/$destdir/ ..."
 rsync -rav ${srcdir}/ ${CPUSER}@"$fn":$CPPATH/$destdir/
 
-echo "setting 0600 ($CPUSER:$CPUSER) permissions on $CPPATH/$destdir/key\* ..."
-ssh ${CPUSER}@"$fn" "chmod 0600 $CPPATH/$destdir/key* ; chmod 0600 $CPPATH/$destdir/*.p12 ; chown -R $CPUSER:$CPUSER $CPPATH/$destdir"
+OWNER=${OWNER:-"$CPUSER:$CPUSER"}
+
+echo "setting $keyperms ($OWNER) permissions on $CPPATH/$destdir/key\* ..."
+ssh ${CPUSER}@"$fn" "chmod $keyperms $CPPATH/$destdir/key* ; chmod $keyperms $CPPATH/$destdir/*.p12 ; chown -R $OWNER $CPPATH/$destdir"
 
 if [ "$httpdrestart" != "" ]; then
   if [ $CPUSER = root ]; then
