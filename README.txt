@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------------
-TCS Generation 4 (2020 edition)
+TCStools - TCS Generation 4 (2020 edition)
 -----------------------------------------------------------------------------
 
 About
@@ -13,6 +13,12 @@ We apologize for the rather haphazard code layout, which is most certainly
 everyone to make improvements or do code cleanup.  The shell scripts are
 written so as to require minimal dependencies (usually only OpenSSL and 
 basic utilities like ls, awk, or grep)
+
+Some additional utility scripts useful for inspecting and debugging
+certificate issues are included:
+- probcert: connect to an SSL server or read a certificate or key file
+  and display key attributes of the certificate found (expiry, SANs, modulus)
+- listcerts.sh: list subject and issuer of all the PEM blobs in a file
 
 ! This also includes the scripts to request and retrieve certificates that are 
 ! issued through the Sectigo interface SCM. Using SCM without fixing up what 
