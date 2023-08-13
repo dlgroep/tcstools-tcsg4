@@ -1,0 +1,27 @@
+==============================================================================
+                                    TCStools
+==============================================================================
+
+The set of TCStools scripts is basically a dump of my internal scripts used
+to test the GEANT Trusted Certificate Service. This is the Generation 4
+instance (2020 edition) of the service, with associated scripts. The scripts
+will be different for each generation, and even within a generation may
+vary over time.
+
+Some have found these scripts useful, e.g. for cleaning out historic roots 
+that are included by Sectigo into the generated certificate chains in SCM.
+See the README.txt file for what each script does.
+
+Apologies for the commit logs and many typos in the commit messages. This
+repo was previously a private subversion repo for myself only, and the
+exact commit messages did not matter much. Oh well ... now I'm bitten by it.
+
+The public versions of these scripts are at
+  https://software.nikhef.nl/experimental/tcstools/
+
+and some are included in the DutchGrid TCS pages at
+  https://ca.dutchgrid.nl/tcs/
+
+Enjoy!
+
+  DavidG.
