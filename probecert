@@ -43,9 +43,9 @@ if [ -f "$host" ]; then
 else
   echo "Hostname: $host"
   if [ $quiet = 0 ]; then
-    openssl s_client $starttls -connect "$host":$port -showcerts < /dev/null 2>/dev/null  | openssl x509 -text -modulus -noout | egrep '(Subject:|Issuer:|Not After|DNS|Modulus=)' | sed -e 's/^ *//g' | perl -pe 's/^Modulus=(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2}).*$/Modulus: $1:$2:$3:$4:$5:$6:$7:$8:$9 .../'|perl -pe 's/,\sDNS:/\n  /g;s/^DNS:/SubjectAltNames:\n  /'
+    openssl s_client $starttls -connect "$host":$port -showcerts < /dev/null 2>/dev/null  | openssl x509 -serial -text -modulus -noout | egrep '(Subject:|Issuer:|Not After|DNS|Modulus=|serial=)' | sed -e 's/^ *//g' | perl -pe 's/^Modulus=(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2}).*$/Modulus: $1:$2:$3:$4:$5:$6:$7:$8:$9 .../'|perl -pe 's/,\sDNS:/\n  /g;s/^DNS:/SubjectAltNames:\n  /' | perl -pe 's/^serial=/Serial Number/ and $_ = (join ":",unpack "(A13)(A2)*", $_)."\n"'
   else
-    openssl s_client $starttls -connect "$host":$port -showcerts < /dev/null 2>/dev/null  | openssl x509 -text -modulus -noout | egrep '(Subject:|Issuer:|Not After|Modulus=)' | sed -e 's/^ *//g' | perl -pe 's/^Modulus=(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2}).*$/Modulus: $1:$2:$3:$4:$5:$6:$7:$8:$9 .../'|perl -pe 's/,\sDNS:/\n  /g;s/^DNS:/SubjectAltNames:\n  /'
+    openssl s_client $starttls -connect "$host":$port -showcerts < /dev/null 2>/dev/null  | openssl x509 -serial -text -modulus -noout | egrep '(Subject:|Issuer:|Not After|Modulus=|serial=)' | sed -e 's/^ *//g' | perl -pe 's/^Modulus=(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})(.{2}).*$/Modulus: $1:$2:$3:$4:$5:$6:$7:$8:$9 .../'|perl -pe 's/,\sDNS:/\n  /g;s/^DNS:/SubjectAltNames:\n  /' | perl -pe 's/^serial=/Serial number: / and $_ = (join ":",unpack "(A13)(A2)*", $_)."\n"'
   fi
 
   echo "Certificate chain supplied by host:"
