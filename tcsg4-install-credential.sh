@@ -293,7 +293,7 @@ fi
 openssl pkcs12 -export \
     -passin env:NPW -inkey "$tempdir/key-$credbase.pem" \
     -certfile "$destdir/chain-$credbase.pem" \
-    -name "$friendlyname" -in "$pkcs12eec" \
+    -name "$friendlyname" -in "$pkcs12eec" $OSSL3_LEGACY \
     -passout env:NPW -out "$destdir/package-$credbase.p12"
 
 if [ $? -ne 0 ]; then
