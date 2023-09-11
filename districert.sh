@@ -109,6 +109,9 @@ else
   echo "Not a root user - not installing rsync"
 fi
 
+echo "mkdir -p $CPPATH/$destdir/"
+ssh $CPUSER@"$fn" "mkdir -p $CPPATH/$destdir/"
+
 echo "rsync ${srcdir}/ to ${CPUSER}@"$fn":$CPPATH/$destdir/ ..."
 rsync -rav ${srcdir}/ ${CPUSER}@"$fn":$CPPATH/$destdir/
 
