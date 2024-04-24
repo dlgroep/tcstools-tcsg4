@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+#
+# @(#)tcsg4-clean-certchain - suppress certificates from a chain that could be harmful
+#
+# David Groep <davidg@nikhef.nl>, Nikhef, 2024
+#
+#
+
+import sys
+
+import cryptography.x509
+import cryptography.hazmat.backends
+import cryptography.hazmat.primitives
+from cryptography.x509.oid import NameOID
+
+# the following CAs should be suppressed in the resulting chain list
+# you can suppress based on fingerprint, subject, subject_cn, issuer, and issuer_cn
+# where subject and issuer are in RFC4514 (2253) format
+# This list is for Sectigo chains that keep sending stuff that chould NOT be there
+suppression_list =  {
+        'sha256fp': "68:b9:c7:61:21:9a:5b:1f:01:31:78:44:74:66:5d:b6:1b:bd:b1:09:e0:0f:05:ca:9f:74:24:4e:e5:f5:f5:2b",
+        'issuer': "CN=AAA Certificate Services,O=Comodo CA Limited,L=Salford,ST=Greater Manchester,C=GB",
+        'issuer_cn': "AAA Certificate Services",
+        'issuer_cn': "AddTrust External CA Root",
+    }
+
+def _find_certificate_pem(stream):
+    """ Extract PEM certificates from input, code inspired by ThorSummoner
+    """
+
+    certificate_pem = []
+    begin_certificate = False
+    for line in stream:
+        if line == b'-----END CERTIFICATE-----\n':
+            begin_certificate = False
+            certificate_pem.append(line)
+            yield b''.join(certificate_pem)
+            certificate_pem = []
+
+        if line == b'-----BEGIN CERTIFICATE-----\n':
+            begin_certificate = True
+
+        if begin_certificate:
+            certificate_pem.append(line)
+
+
+def _dump_clean_certchain():
+    """ Print a list of certificates from stdin, unless they are suppressed
+    """
+
+    certificates_found = False
+
+    for certificate_pem in _find_certificate_pem(sys.stdin.buffer):
+        certificate = cryptography.x509.load_pem_x509_certificate(
+            certificate_pem,
+            cryptography.hazmat.backends.default_backend()
+        )
+        certificate_fingerprint = certificate.fingerprint(
+            cryptography.hazmat.primitives.hashes.SHA256(),
+        )
+        certificate_fingerprint_str = ':'.join(
+            '{:02x}'.format(i) for i in certificate_fingerprint
+        )
+
+        outputpem = ""
+        certificates_found = True
+
+        try:
+            cert_subject = certificate.subject.rfc4514_string()
+            cert_subject_cn = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+            cert_issuer = certificate.issuer.rfc4514_string()
+            cert_issuer_cn = certificate.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+
+            suppress = False
+            for key in suppression_list:
+                if key == "sha256fp" and certificate_fingerprint_str == suppression_list[key]:
+                    suppress = True
+                if key == "issuer" and cert_issuer == suppression_list[key]:
+                    suppress = True
+                if key == "issuer_cn" and cert_issuer_cn == suppression_list[key]:
+                    suppress = True
+                if key == "subject" and cert_subject == suppression_list[key]:
+                    suppress = True
+                if key == "subject_cn" and cert_subject_cn == suppression_list[key]:
+                    suppress = True
+
+            if suppress:
+                outputpem += "# Suppressed: " + cert_subject + "\n"
+            else:
+                outputpem += certificate_pem.decode('ascii').rstrip()
+
+        except:
+            sys.stderr.write('{} Certificate has no appropriate structure\n'.format(cert_subject))
+            sys.exit(1)
+        else:
+            print ( outputpem.rstrip() )
+
+    if not certificates_found:
+        sys.stderr.write('No certificates found in input\n')
+        sys.exit(1)
+
+
+def main():
+    _dump_clean_certchain()
+
+
+if __name__ == '__main__':
+    main()
+
+

@@ -19,6 +19,8 @@ certificate issues are included:
 - probcert: connect to an SSL server or read a certificate or key file
   and display key attributes of the certificate found (expiry, SANs, modulus)
 - listcerts.sh: list subject and issuer of all the PEM blobs in a file
+- tcsg4-clean-certchain: remove archaic/broken certificates from a certificate
+  chain (e.g. the AAA Certificate Services one). Takes stdin, writes stdout
 
 ! This also includes the scripts to request and retrieve certificates that are 
 ! issued through the Sectigo interface SCM. Using SCM without fixing up what 
@@ -111,6 +113,54 @@ and the documentation pages from https://ca.dutchgrid.nl/tcs/
   Notice: do NOT import the blob from Sectigo directly into
   anything, since it will corrupt your key chain. Always use
   the "package-<name>.p12" file created by this script
+
+
+*** nik-acme-certupdate
+    ACME External Key Binding managed/protected client
+
+Update (when needed) a certificate using the ACME protocol with pre-validated
+domains, e.g., from the TCSG4 Sectigo ACME endpoints (but any EAB ACME 
+endpoint can be used). It will check the domain list for this host, make 
+sure the installed certificates (by default in /etc/pki/tls/tcsg4/) are 
+as-expected, and will renew them when needed - because the domain list changed
+or the cert will soon expire. The script is intentionally paranoid, even more 
+so that certbot, so that there is always a reasonable cert remaining. 
+It optionally cleanses archaic and wrong roots from the certificate chain (as
+is needed for AAA Certificate Services by Sectigo).
+
+This utility is particularly suited to be invoked from cron - it will just
+check and do nothing unless there is actually actions required. It will not
+even talk to the ACME endpoint if everything is fine. You can run it as 
+often as you want, but typically:
+
+  45 8 * * 1,3,4 root /usr/local/bin/nik-acme-certupdate
+
+is a good startingpoint.
+
+Prerequisites: bash, certbot, openssl [v1+], sed, date, mktemp, diff, logger
+     Optional: tcsg4-clean-certchain [to remove antiquated certificate chain]
+
+The "TARGETDIR" variable sets the place where consumers (like a web server 
+daemon) will expect to find a stable set of keys and certificates. So you
+should not point the web server to directly read from the things generated
+by certbot. It matches the tcsg4-install-servercert.sh directory structure.
+
+Other useful things go into the mndatory configuration file at
+/usr/local/etc/nik-acme-certupdate.config (by default). 
+
+It should contain at keast KID and HMAC, and may override the local defaults:
+
+ KID=Dc1...
+ HMAC=mv_3kv....
+ CERTSERVER=https://acme.enterprise.sectigo.com
+ CERTNAME=`hostname -f`
+ DOMAINS=....
+ TARGETOWNER=openldap
+ TARGETGROUP=root
+ TARGETPERMS=0640
+ TARGETDIR=/etc/pki/tls/tcsg4
+ POSTRUN=
+
 
 
 -----------------------------------------------------------------------------
