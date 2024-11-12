@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# @(#)nik-acme-certupdate
+# @(#)nik-acme-certupdate version 1.2 (2024-11-12)
 #
 # Update (when needed) a certificate using the ACME protocol with pre-validated
 # domains, e.g., from the TCSG4 Sectigo ACME endpoints (but any EAB ACME endpoint
@@ -68,7 +68,7 @@
 
 exec=
 logger="logger -t nik-acme-certupdate -p daemon.notice"
-OPTIONS="hfnC:a:c:o:g:p:d:i:s:r:"
+OPTIONS="hfFnC:a:c:o:g:p:d:i:s:r:"
 
 CERTBOT=/usr/bin/certbot
 CERTSERVER=https://acme.sectigo.com/v2/GEANTOV
@@ -76,6 +76,7 @@ CERTBOTDIR=/etc/letsencrypt/live/
 CERTNAME=`hostname -f`
 CERTGRACEDAYS=11
 CERTFORCE=0
+CERTFULLFORCE=0
 CERTCHAINCLEANTOOL=tcsg4-clean-certchain
 KEYTYPE=rsa
 KEYSIZE=4096
@@ -104,7 +105,7 @@ appropriateness (esp. for non-web servers)
 Usage: $0 [-h] [-C config] [-a acme_account] [-c certname] [-d targetdir]
   [-o targetowner] [-g targetgroup] [-p targetperms (octal)]
   [-s ACME-endpoint] [-i mailaddr] [-r postrun-command]
-  [-f] [-n] [host [<host> ...]]
+  [-f] [-F] [-n] [host [<host> ...]]
 
   -d targetdir      where to install the confirmed certificate and
                     private key (default: $TARGETDIR)
@@ -121,7 +122,9 @@ Usage: $0 [-h] [-C config] [-a acme_account] [-c certname] [-d targetdir]
                     (no default, set in the config files)
   -C configfile     read configuration from file (shell syntax, defaults
                     to list below)
-  -f                force update even if not expiring in next $CERTGRACEDAYS days
+  -f                force run of certbot even if not expiring in next $CERTGRACEDAYS days
+  -F                force renewal by certbot bypassing its builtin stand-off
+                    period (adds --force-renewal to certbot)
   -n                dry-run: everything except for actually getting new cert
 
   <host>            FQDN(s) to include in the certificate. The first one ends
@@ -179,6 +182,7 @@ do
   case $OPTION in
   h ) help ; exit 0 ;;
   f ) CERTFORCE=1 ;;
+  F ) CERTFULLFORCE=1 ;;
   n ) DRYRUN=1 ;;
   C ) ;; # dont care about -C any more
   a ) CERTACCOUNTNAME="$OPTARG" ;;
@@ -278,7 +282,13 @@ $logger "ACME renewal: acquiring certificates for $domainlist"
 if [ "$DRYRUN" -eq 0 ]; then
   echo "Acquiring certificate from $CERTSERVER"
   $logger "ACME renewal: acquiring certificate from $CERTSERVER"
-  $exec certbot certonly --standalone --non-interactive --agree-tos \
+  renewforce=""
+  if [ $CERTFULLFORCE -ne 0 ]; then
+    echo "ACME renewal: forcing certbot renewal"
+    $logger "ACME renewal: forcing certbot renewal"
+    renewforce=" --force-renewal"
+  fi
+  $exec certbot certonly --standalone $renewforce --non-interactive --agree-tos \
     --key-type "$KEYTYPE" --rsa-key-size "$KEYSIZE" \
     --cert-name "$CERTACCOUNTNAME" --email "$NOTIFY" \
     --server "$CERTSERVER" \
@@ -448,3 +458,13 @@ echo "Done."
 $logger "ACME renewal: done"
 
 
+# ###########################################################################
+# CHANGES
+#
+# version 1.2 (2024-11-12)
+#   - add FullForce (certbot --force-renewal) option
+# version 1.1 (2024-04-04)
+#   -  add documentation and make available in public repositories
+# version 1.0
+#   - Nikhef SoLR version crafted
+#
