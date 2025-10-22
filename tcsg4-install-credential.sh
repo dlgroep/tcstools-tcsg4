@@ -60,11 +60,12 @@ Usage: tcsg4-install-credential.sh [-d destdir] [-p passfile] [-r|-R] [-f]
    --csr         generate a CSR request file for future use in destdir
    --newpass     ask for a new password for resulting credential secrets
 
-   <PKCS12.p12>  filename of the blob produced by Sectigo
+   <PKCS12.p12>  filename of the blob with the client credential
 
-Notice: do NOT import the blob from Sectigo directly into
+Notice: do NOT import any blobs from Sectigo directly into
 anything, since it will corrupt your key chain. Always use
-the "package-<name>.p12" file created by this script
+the "package-<name>.p12" file created by this script. Credentials
+from other (TCS) providers are fine.
 
 EOF
    return;
@@ -136,7 +137,7 @@ fi
 export PW NPW
 
 # ############################################################################
-# extraction of Sectigo blob of crap
+# extraction of any Sectigo blob of crap
 #
 tempdir=`mktemp -d tcsg4unpack.XXXXXX`
 
