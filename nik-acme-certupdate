@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# @(#)nik-acme-certupdate version 1.2 (2024-11-12)
+# @(#)nik-acme-certupdate version 1.2b (2024-11-12, updated 2025)
 #
 # Update (when needed) a certificate using the ACME protocol with pre-validated
 # domains, e.g., from the TCSG4 Sectigo ACME endpoints (but any EAB ACME endpoint
@@ -24,7 +24,7 @@
 # Generated CertBot command:
 #   certbot certonly --standalone --non-interactive --agree-tos \
 #    --rsa-key-size 4096 --key-type rsa --email admin@example.com \
-#    --server https://acme.sectigo.com/v2/GEANTOV \
+#    --server https://acme.example.com/v2/GEANTOV \
 #    --eab-kid KID --eab-hmac-key HMAC \
 #    --cert-name `hostname -f` -d sub.domain.example.com
 #
@@ -33,14 +33,14 @@
 #
 # KID=Dc1...
 # HMAC=mv_3kv....
-# CERTSERVER=https://acme.enterprise.sectigo.com
+# CERTSERVER=https://acme.example.com
 # CERTNAME=`hostname -f`
 # DOMAINS=....
 # TARGETOWNER=openldap
 # TARGETGROUP=root
 # TARGETPERMS=0640
 # TARGETDIR=/etc/pki/tls/tcsg4
-# POSTRUN=
+# POSTRUN="systemctl reload httpd 2>&1 | logger"
 #
 # The "TARGETDIR" variable sets the place where consumers (like a web server 
 # daemon) will expect to find a stable set of keys and certificates. So you
@@ -71,7 +71,7 @@ logger="logger -t nik-acme-certupdate -p daemon.notice"
 OPTIONS="hfFnC:a:c:o:g:p:d:i:s:r:"
 
 CERTBOT=/usr/bin/certbot
-CERTSERVER=https://acme.sectigo.com/v2/GEANTOV
+CERTSERVER=https://acme.example.com/v2/GEANTOV
 CERTBOTDIR=/etc/letsencrypt/live/
 CERTNAME=`hostname -f`
 CERTGRACEDAYS=11
